@@ -36,3 +36,13 @@ variable "storage" {
 variable "ssh_public_key" {
   type = string
 }
+
+variable "vm_name_prefix" {
+  type = string
+  default = ""
+}
+
+variable "vm_name_postfix" {
+  type = string
+  default = ""
+}

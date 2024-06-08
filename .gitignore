@@ -1,5 +1,5 @@
-proxmox/terraform/.terraform.lock.hcl
-proxmox/terraform/.terraform
-proxmox/terraform/*.auto.tfvars
-proxmox/terraform/terraform.tfstate*
-proxmox/terraform/.ssh
+**/.terraform.lock.hcl
+**/.terraform
+**/*.auto.tfvars
+**/*.tfstate*
+**/.ssh

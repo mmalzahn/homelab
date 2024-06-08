@@ -1,30 +1,23 @@
-locals {
-  vm_name = "testserver1"
-}
-
-output "test" {
-  value     = proxmox_virtual_environment_vm.master
-  sensitive = true
-}
-
-resource "proxmox_virtual_environment_vm" "master" {
-  name      = local.vm_name
-  node_name = var.pm_node
+resource "proxmox_virtual_environment_vm" "vm" {
+  name      = "${var.vm_name_prefix}${var.vm_name}${var.vm_name_postfix}"
+  node_name = var.nodename
+  migrate = true
+  tags = var.vm_tags
   audio_device {
     enabled = false
   }
   cpu {
     type  = "host"
-    cores = 2
+    cores = var.vm_cpu_cores
   }
   disk {
     interface = "scsi0"
-    size      = 20
+    size      = var.vm_disc_size
     discard   = "on"
     ssd       = true
   }
   memory {
-    dedicated = 4096
+    dedicated = var.vm_ram
     floating  = 1024
   }
   operating_system {
@@ -36,21 +29,27 @@ resource "proxmox_virtual_environment_vm" "master" {
     trim    = true
   }
   clone {
-    vm_id = 8000
+    vm_id = var.vm_master_id
     full  = true
+  }
+  network_device {
+    bridge = "srvNet"
+    enabled = true
+    model = "virtio"
   }
   initialization {
     ip_config {
       ipv4 {
-        address = "10.123.100.230/24"
-        gateway = "10.123.100.1"
+        address = var.vm_net_ip
+        gateway = var.vm_net_gateway
       }
     }
     dns {
-      servers = ["10.123.100.1"]
+      servers = var.vm_net_dns_servers
     }
     user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
   }
+
   lifecycle {
     ignore_changes = [initialization]
   }
@@ -59,11 +58,20 @@ resource "proxmox_virtual_environment_vm" "master" {
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
   datastore_id = "local"
-  node_name    = var.pm_node
+  node_name    = var.nodename
 
   source_raw {
     data = <<EOF
 #cloud-config
+packages:
+  - qemu-guest-agent
+apt_update: true
+apt_upgrade: true
+ntp:
+  ntp_client: auto
+  enabled: true
+package_update: true
+package_upgrade: true
 users:
   - default
   - name: ubuntu
@@ -74,14 +82,12 @@ users:
       - ${var.ssh_public_key}
     sudo: ALL=(ALL) NOPASSWD:ALL
 runcmd:
-    - apt update
-    - apt install -y qemu-guest-agent net-tools
     - timedatectl set-timezone Europe/Berlin
     - systemctl enable qemu-guest-agent
     - systemctl start qemu-guest-agent
     - echo "done" > /tmp/cloud-config.done
     EOF
 
-    file_name = "cloud-config.yaml"
+    file_name = "${var.vm_name}-cloud-config.yaml"
   }
 }

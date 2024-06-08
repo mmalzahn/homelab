@@ -1,0 +1,29 @@
+#cloud-config
+packages:
+  - qemu-guest-agent
+
+apt_update: true
+
+apt_upgrade: true
+
+hostname: testhost
+
+ntp:
+  ntp_client: auto
+  enabled: true
+
+package_update: true
+package_upgrade: true
+
+groups:
+  - admingroup: [root,sys]
+  - otheruser
+
+users:
+  - name: hans
+    gecos: Hans josef
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/kkfNBjqycRa9R+xqSRmQlPEr3PAi7/Y4ryoGCfgcVi4/q87Atqy2Jwq6rrkum/oG9m7avkcfjydMxsMAPW7LL1V1ZQNRvTVPU89kgfEh78qcm8RkKwi+lrZ2Zna9HIJUAGyJKnRmOdmZ+dokQCztsrsvS+FFfJ8NgCMBGQfOPLRm/MLjfzwnyS4vknKB52i+KLji95h1ipzCum4/vTWD/LAiz08kzwr65ivgWgRDReovu3zkFKH/e4MokAlEWZMYK3QqAG2zfuQsd4/+yX2Vr6k6dFqzNL29joZcr/eRyBsvQ7VTiR2YqvZ3o7d/BwFUQov11r7XRoRkTtjeW8VwNRpy1UuTo9Qb+3MEHUt0BeHquuycUDR9X4iJq1kVtMz+jpwAdNf/+R3YlQC+GWtzPKjQJR9fa/OQIYzkmPi25qAD4eFAvcEJlVB3HLF6dmrG42SKUYluAKjx3pQt19MoTSXRiwwkLhoxs8DhXiDO5P3cpzI8sahTlPtXVWHkvIQFefjlAXvZsKEREbomkeGSUwtif8qK/FxpCdUm6Cl4ge0TAA6xGAEzSiRdUxWKSOTMoIcSdBiA34OA7sG+8yky0oddRgWciF0hcLCVRtgsneR9R2qSBRskAxSuYNG1oS+7qRuiWyr//JmjS5q7FRbvEubAZ7PxZHaU9RNOHHrilw== labKey
