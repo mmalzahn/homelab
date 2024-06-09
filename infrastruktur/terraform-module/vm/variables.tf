@@ -57,7 +57,13 @@ variable "vm_tags" {
   type = list(string)
   default = []
 }
-# variable "vm_ci_usrdata_fileid" {
-#   type = string
-#   default = ""
-# }
+
+variable "vm_net_bridge" {
+  type = string
+  default = "srvNet"
+}
+
+variable "vm_pool_id" {
+  default = "lab"
+  type = string
+}

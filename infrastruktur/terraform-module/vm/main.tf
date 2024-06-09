@@ -3,9 +3,9 @@ resource "proxmox_virtual_environment_vm" "vm" {
   node_name = var.nodename
   migrate = true
   tags = var.vm_tags
-  audio_device {
-    enabled = false
-  }
+  # audio_device {
+  #   enabled = false
+  # }
   cpu {
     type  = "host"
     cores = var.vm_cpu_cores
@@ -33,10 +33,12 @@ resource "proxmox_virtual_environment_vm" "vm" {
     full  = true
   }
   network_device {
-    bridge = "srvNet"
+    bridge = var.vm_net_bridge
     enabled = true
     model = "virtio"
+    firewall = false
   }
+ pool_id = var.vm_pool_id
   initialization {
     ip_config {
       ipv4 {
@@ -54,40 +56,21 @@ resource "proxmox_virtual_environment_vm" "vm" {
     ignore_changes = [initialization]
   }
 }
+data "template_file" "cloud_config" {
+  template = file("${path.module}/cloud-config.tftpl")
+  vars = {
+    ssh_public_key = var.ssh_public_key
+  }
+}
 
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
   datastore_id = "local"
   node_name    = var.nodename
+  overwrite = true
 
   source_raw {
-    data = <<EOF
-#cloud-config
-packages:
-  - qemu-guest-agent
-apt_update: true
-apt_upgrade: true
-ntp:
-  ntp_client: auto
-  enabled: true
-package_update: true
-package_upgrade: true
-users:
-  - default
-  - name: ubuntu
-    groups:
-      - sudo
-    shell: /bin/bash
-    ssh_authorized_keys:
-      - ${var.ssh_public_key}
-    sudo: ALL=(ALL) NOPASSWD:ALL
-runcmd:
-    - timedatectl set-timezone Europe/Berlin
-    - systemctl enable qemu-guest-agent
-    - systemctl start qemu-guest-agent
-    - echo "done" > /tmp/cloud-config.done
-    EOF
-
+    data = data.template_file.cloud_config.rendered
     file_name = "${var.vm_name}-cloud-config.yaml"
   }
 }
